@@ -1,6 +1,6 @@
 {
   "name": "frida-trace",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Trace APIs declaratively",
   "main": "index.js",
   "browserify": {
