@@ -36,6 +36,11 @@ trace({
     onEvent(event) {
       console.log('onEvent! ' + JSON.stringify(event, null, 2));
     },
+    onEnter(event, context) {
+      event.trace = Thread.backtrace(context)
+        .map(DebugSymbol.fromAddress)
+        .filter(x => x.name);
+    },
     onError(e) {
       console.error(e);
     }
