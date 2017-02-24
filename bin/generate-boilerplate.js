@@ -10,23 +10,36 @@ input.resume();
 
 const output = process.stdout;
 
-function writeCode(data) {
+function writeCode (data) {
   const api = JSON.parse(data);
   const code = apiDescriptionToCode(api);
   process.stdout.write(code);
 }
 
-function apiDescriptionToCode(api) {
-  const funcDecls = Object.keys(api).map(name => {
-    const funcDesc = api[name];
+function apiDescriptionToCode (api) {
+  const {functions, structs} = api;
+
+  return []
+    .concat(functionDescriptionsToCode(functions))
+    .concat(structDescriptionsToCode(structs))
+    .join('\n');
+}
+
+function functionDescriptionsToCode (funcs) {
+  if (funcs.length === 0) {
+    return [];
+  }
+
+  const funcDecls = funcs.map(func => {
+    const [name, retType, args] = func;
     return funcDescriptionToCode({
       name: name,
-      retType: funcDesc[0],
-      args: funcDesc[1]
-    });
+      retType: retType,
+      args: args
+    }, 1);
   });
 
-  return `trace({
+  const code = `trace({
   module: 'libfoo.dylib',
   functions: [
     ${funcDecls.join(',\n    ')}
@@ -45,21 +58,92 @@ function isZero(value) {
   return value === 0;
 }
 `;
+
+  return [code];
 }
 
-function funcDescriptionToCode(func) {
+function structDescriptionsToCode (structs) {
+  if (structs.length === 0) {
+    return [];
+  }
+
+  const code = structs
+    .reduce((state, [name, funcs]) => {
+      const body = structDescriptionToCode(funcs);
+
+      let code;
+      const {previous} = state;
+      if (previous !== null && strippedName(name) === strippedName(previous.name) && body.startsWith(previous.body)) {
+        code = `const ${name} = ${previous.name}.concat([
+${body.substr(previous.body.length + 2)}
+]);`;
+      } else {
+        code = `const ${name} = [
+  ${body}
+];`;
+      }
+
+      state.entries.push(code);
+      state.previous = {
+        name: name,
+        body: body
+      };
+
+      return state;
+    }, {
+      entries: [],
+      previous: null
+    })
+    .entries
+    .join('\n\n');
+
+  return [code];
+}
+
+function strippedName (name) {
+  return name.replace(/[0-9]/g, '');
+}
+
+function structDescriptionToCode (funcs) {
+  const funcDecls = funcs
+    .filter(([, , retType]) => retType !== null)
+    .reduce((state, [offset, name, retType, args]) => {
+      const padding = offset - state.previousOffset - 1;
+      if (padding > 0) {
+        state.items.push(`padding(${padding})`);
+      }
+      state.previousOffset = offset;
+
+      state.items.push(funcDescriptionToCode({
+        offset: offset,
+        name: name,
+        retType: retType,
+        args: args
+      }, 0));
+
+      return state;
+    }, {
+      items: [],
+      previousOffset: 0
+    })
+    .items;
+  return funcDecls.join(',\n  ');
+}
+
+function funcDescriptionToCode (func, indentLevel) {
+  const indentation = makeIndentation(indentLevel);
   let argDecls;
   if (func.args.length > 0) {
     argDecls = `[
-      ${func.args.map(argDescriptionToCode, func).join(',\n      ')}
-    ]`;
+${indentation}    ${func.args.map(argDescriptionToCode, func).join(',\n' + indentation + '    ')}
+${indentation}  ]`;
   } else {
     argDecls = '[]';
   }
   return `func('${func.name}', ${retTypeDescriptionToCode(func.retType)}, ${argDecls})`;
 }
 
-function argDescriptionToCode(arg) {
+function argDescriptionToCode (arg) {
   const name = arg[0];
   const type = arg[1];
   const direction = argDirection(arg);
@@ -73,7 +157,7 @@ function argDescriptionToCode(arg) {
   return `arg${direction}('${name}', ${typeDescriptionToCode(type)}${condition})`;
 }
 
-function retTypeDescriptionToCode(type) {
+function retTypeDescriptionToCode (type) {
   if (type === 'Void') {
     return 'null';
   }
@@ -81,7 +165,7 @@ function retTypeDescriptionToCode(type) {
   return `retval(${typeDescriptionToCode(type)})`;
 }
 
-function typeDescriptionToCode(type) {
+function typeDescriptionToCode (type) {
   if (typeof type === 'object') {
     if (type.length === 2) {
       const pointee = type[1];
@@ -99,7 +183,7 @@ function typeDescriptionToCode(type) {
   }
 }
 
-function argDirection(arg) {
+function argDirection (arg) {
   const type = arg[1];
   if (typeof type === 'object' && type.length > 2) {
     if (isPointer(type[1]))
@@ -111,6 +195,14 @@ function argDirection(arg) {
   }
 }
 
-function isPointer(type) {
+function isPointer (type) {
   return type[0] === 'Pointer';
+}
+
+function makeIndentation (level) {
+  const result = [];
+  for (let i = 0; i !== level; i++) {
+    result.push('  ');
+  }
+  return result.join('');
 }

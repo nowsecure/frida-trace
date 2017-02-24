@@ -2,7 +2,10 @@
 'use strict';
 
 const clang = require('libclang');
-const clangApi = require('libclang/lib/dynamic_clang').libclang;
+const dynamicClang = require('libclang/lib/dynamic_clang');
+
+const clangApi = dynamicClang.libclang;
+const {CXCallingConv_Invalid} = dynamicClang.CONSTANTS.CXCallingConv;
 
 const Cursor = clang.Cursor;
 const Index = clang.Index;
@@ -17,21 +20,46 @@ if (process.argv.length !== 3) {
 const data = parseHeader(process.argv[2]);
 process.stdout.write(JSON.stringify(data));
 
-function parseHeader(path) {
+function parseHeader (path) {
   const index = new Index(true, true);
   const unit = TranslationUnit.fromSource(index, path, ['-I/usr/include']);
 
-  const result = {};
-  let func = null;
-  let args = null;
+  const funcs = [];
+  const structs = [];
+
   unit.cursor.visitChildren(function (parent) {
     switch (this.kind) {
       case Cursor.FunctionDecl:
-        const retType = parseType(new Type(clangApi.clang_getCursorResultType(this._instance)));
-        args = [];
-        func = [retType, args];
-        result[this.spelling] = func;
-        return Cursor.Recurse;
+        funcs.push(parseFunction(this));
+        break;
+      case Cursor.StructDecl: {
+        const struct = parseStruct(this);
+        const [name, funcs] = struct;
+        if (name !== null && funcs.length > 0) {
+          structs.push(struct);
+        }
+        break;
+      }
+    }
+    return Cursor.Continue;
+  });
+
+  index.dispose();
+
+  return {
+    functions: funcs,
+    structs: structs
+  };
+}
+
+function parseFunction (cursor) {
+  const name = cursor.spelling;
+
+  const retType = parseType(new Type(clangApi.clang_getCursorResultType(cursor._instance)));
+  const args = [];
+
+  cursor.visitChildren(function (parent) {
+    switch (this.kind) {
       case Cursor.ParmDecl:
         const argName = this.spelling || 'a' + (args.length + 1);
         const argType = parseType(this.type);
@@ -40,15 +68,66 @@ function parseHeader(path) {
       default:
         break;
     }
+  });
+
+  return [name, retType, args];
+}
+
+function parseStruct (cursor) {
+  const name = cursor.spelling;
+  if (name === '') {
+    return [null, []];
+  }
+
+  const funcs = [];
+
+  let func = null;
+  let args = null;
+
+  cursor.visitChildren(function (parent) {
+    switch (this.kind) {
+      case Cursor.FieldDecl:
+        if (isFunctionPointer(this.type)) {
+          const offset = clangApi.clang_Cursor_getOffsetOfField(this._instance) / 8 / 8;
+
+          args = [];
+          func = [offset, this.spelling, 'Void', args];
+
+          funcs.push(func);
+
+          return Cursor.Recurse;
+        }
+        break;
+      case Cursor.TypeRef:
+        func[2] = parseType(this);
+        break;
+      case Cursor.ParmDecl:
+        const argName = this.spelling || 'a' + (args.length + 1);
+        const argType = parseType(this.type);
+        args.push([argName, argType]);
+        break;
+      default:
+        break;
+    }
+
     return Cursor.Continue;
   });
 
-  index.dispose();
-
-  return result;
+  return [name, funcs];
 }
 
-function parseType(type) {
+function isFunctionPointer (type) {
+  const name = type.spelling;
+  if (name !== 'Pointer') {
+    return false;
+  }
+
+  const conv = clangApi.clang_getFunctionTypeCallingConv(clangApi.clang_getPointeeType(type._instance));
+
+  return conv !== CXCallingConv_Invalid;
+}
+
+function parseType (type) {
   const name = type.spelling;
   if (name === 'Pointer') {
     const path = [
@@ -69,6 +148,6 @@ function parseType(type) {
   }
 }
 
-function parseQualifiers(type) {
+function parseQualifiers (type) {
   return clangApi.clang_isConstQualifiedType(type._instance) ? ['const'] : [];
 }
