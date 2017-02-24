@@ -62,6 +62,8 @@ function parseType(type) {
     } while (t.spelling === 'Pointer');
 
     return path;
+  } else if (name === 'Typedef') {
+    return parseType(new Type(clangApi.clang_getCanonicalType(type._instance)));
   } else {
     return name;
   }
