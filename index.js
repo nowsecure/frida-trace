@@ -6,10 +6,54 @@ const IN = Symbol('in');
 const OUT = Symbol('out');
 const IN_OUT = Symbol('in-out');
 
+const pointerSize = Process.pointerSize;
+
 module.exports = trace;
 
 function trace (spec) {
-  spec.functions.forEach(traceModuleFunction(spec.module, spec.callbacks.onEvent), spec);
+  const {module, vtable, functions} = spec;
+  const {onError} = spec.callbacks;
+
+  const intercept = makeInterceptor(spec);
+
+  if (module !== undefined) {
+    functions.forEach(func => {
+      const {name} = func;
+
+      const impl = Module.findExportByName(module, name);
+      if (impl === null) {
+        onError(new Error(`Failed to resolve ${module}!${name}`));
+        return;
+      }
+
+      intercept(func, impl);
+    });
+  } else if (vtable !== undefined) {
+    let offset = 0;
+
+    for (let entry of functions) {
+      const isPadding = isArray(entry);
+      if (isPadding) {
+        const [n] = entry;
+        offset += n * pointerSize;
+        continue;
+      }
+
+      let impl;
+      try {
+        impl = Memory.readPointer(vtable.add(offset));
+      } catch (e) {
+        onError(new Error(`Failed to read from vtable at offset ${offset}: ${e}`));
+        break;
+      }
+
+      intercept(entry, impl);
+
+      offset += pointerSize;
+    }
+  } else {
+    throw new Error('Either a module or a vtable must be specified');
+  }
 }
 
 trace.func = func;
@@ -17,6 +61,7 @@ trace.argIn = argIn;
 trace.argOut = argOut;
 trace.argInOut = argInOut;
 trace.retval = retval;
+trace.padding = padding;
 
 trace.bind = bind;
 trace.when = when;
@@ -41,17 +86,11 @@ trace.types = {
   utf16: utf16
 };
 
-function traceModuleFunction (module, emit) {
-  return function (func) {
-    const name = func.name;
-    const spec = this;
-    const {onEnter, onLeave, onError} = spec.callbacks;
+function makeInterceptor (spec) {
+  const {onEvent, onEnter, onLeave, onError} = spec.callbacks;
 
-    const impl = Module.findExportByName(module, name);
-    if (impl === null) {
-      onError(new Error(`Failed to resolve ${module}!${name}`));
-      return;
-    }
+  return function (func, impl) {
+    const name = func.name;
 
     const inputActions = [];
     const outputActions = [];
@@ -97,7 +136,7 @@ function traceModuleFunction (module, emit) {
           onLeave.call(this, event);
         }
 
-        emit(event);
+        onEvent(event);
       }
     });
   };
@@ -231,6 +270,10 @@ function arg (direction, name, type, condition) {
 
 function retval (type, condition) {
   return argOut('result', type, condition);
+}
+
+function padding (n) {
+  return [n];
 }
 
 function bind (property, value) {
