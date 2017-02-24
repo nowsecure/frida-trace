@@ -92,6 +92,8 @@ function typeDescriptionToCode(type) {
         return 'pointer(POINTER)';
     }
     return 'POINTER';
+  } else if (type === 'UChar') {
+    return 'BYTE';
   } else {
     return type.toUpperCase();
   }
