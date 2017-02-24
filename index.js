@@ -22,6 +22,7 @@ trace.bind = bind;
 trace.when = when;
 
 trace.types = {
+  BOOL: bool(),
   BYTE: byte(),
   SHORT: short(),
   INT: int(),
@@ -30,6 +31,7 @@ trace.types = {
   UTF8: utf8(),
   UTF16: utf16(),
 
+  bool: bool,
   byte: byte,
   short: short,
   int: int,
@@ -261,6 +263,17 @@ function dependencies (direction, type, condition) {
   }
 
   return result;
+}
+
+function bool () {
+  return {
+    parse (rawValue) {
+      return !!rawValue.toInt32();
+    },
+    read (ptr) {
+      return !!Memory.readU8(ptr);
+    }
+  };
 }
 
 function byte () {
