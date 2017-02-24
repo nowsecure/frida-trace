@@ -84,7 +84,3 @@ trace({
     ]),
 ...
 ```
-
-You may have to patch `node_modules/libclang/lib/dynamic_clang.js` and modify
-line 946 to specify the full path to libclang.dylib, e.g.:
-`/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/libclang`
