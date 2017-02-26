@@ -116,7 +116,7 @@ function makeInterceptor (spec) {
           action(values, event, params);
         }
         if (onEnter !== undefined) {
-          onEnter.call(this, event);
+          onEnter.call(this, event, args);
         }
 
         this.values = values;
@@ -133,7 +133,7 @@ function makeInterceptor (spec) {
           action(values, event, params);
         }
         if (onLeave !== undefined) {
-          onLeave.call(this, event);
+          onLeave.call(this, event, retval);
         }
 
         onEvent(event);
