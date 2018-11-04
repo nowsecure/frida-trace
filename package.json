@@ -10,14 +10,19 @@
         {
           "presets": [
             [
-              "es2015",
+              "@babel/preset-env",
               {
                 "loose": true
               }
             ]
           ],
           "plugins": [
-            "transform-runtime"
+            [
+              "@babel/plugin-transform-runtime",
+              {
+                "corejs": 2
+              }
+            ]
           ]
         }
       ]
@@ -37,9 +42,11 @@
     "frida-trace-parse-header": "bin/parse-header.js"
   },
   "dependencies": {
-    "babel-plugin-transform-runtime": "^6.15.0",
-    "babel-preset-es2015": "^6.18.0",
-    "babel-runtime": "^6.20.0",
+    "@babel/core": "^7.1.2",
+    "@babel/plugin-transform-runtime": "^7.1.0",
+    "@babel/preset-env": "^7.1.0",
+    "@babel/runtime-corejs2": "^7.1.2",
+    "babelify": "^10.0.0",
     "lodash": "^4.17.4"
   },
   "devDependencies": {
