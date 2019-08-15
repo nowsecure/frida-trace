@@ -1,6 +1,4 @@
 #!/usr/bin/env node
-'use strict';
-
 const Application = require('../lib/application');
 const chalk = require('chalk');
 const hexy = require('hexy').hexy;

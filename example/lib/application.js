@@ -1,5 +1,3 @@
-'use strict';
-
 const co = require('co');
 const frida = require('frida');
 const fs = require('fs');

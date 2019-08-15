@@ -1,5 +1,3 @@
-'use strict';
-
 const {isArray} = require('lodash');
 
 const IN = Symbol('in');

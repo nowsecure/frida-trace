@@ -1,6 +1,4 @@
 #!/usr/bin/env node
-'use strict';
-
 const concat = require('concat-stream');
 
 const input = process.stdin;
