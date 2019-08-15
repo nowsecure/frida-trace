@@ -1,7 +1,9 @@
-const co = require('co');
 const frida = require('frida');
 const fs = require('fs');
 const path = require('path');
+const util = require('util');
+
+const readFile = util.promisify(fs.readFile);
 
 class Application {
   constructor(ui) {
@@ -16,50 +18,46 @@ class Application {
     });
   }
 
-  run(target) {
-    return co(function* () {
-      const device = yield frida.getDevice(target.device);
-      this._device = device;
+  async run(target) {
+    const device = await frida.getDevice(target.device);
+    this._device = device;
 
-      const onOutput = this._onOutput.bind(this);
-      device.events.listen('output', onOutput);
+    const onOutput = this._onOutput.bind(this);
+    device.output.connect(onOutput);
+
+    try {
+      const spawn = target.hasOwnProperty('argv');
+
+      let pid;
+      if (spawn)
+        pid = await device.spawn(target.argv);
+      else
+        pid = target.pid;
+      this._pid = pid;
+
+      const session = await device.attach(pid);
+      this._session = session;
+
+      const agent = await readFile(require.resolve('./_agent'), 'utf8');
+      const script = await session.createScript(agent);
+      this._script = script;
+
+      const onMessage = this._onMessage.bind(this);
+      script.message.connect(onMessage);
 
       try {
-        const spawn = target.hasOwnProperty('argv');
+        await script.load();
 
-        let pid;
         if (spawn)
-          pid = yield device.spawn(target.argv);
-        else
-          pid = target.pid;
-        this._pid = pid;
+          await device.resume(pid);
 
-        const session = yield device.attach(pid);
-        this._session = session;
-
-        const agent = yield readFile(require.resolve('./_agent'), 'utf8');
-        const script = yield session.createScript(agent);
-        this._script = script;
-
-        const onMessage = this._onMessage.bind(this);
-        script.events.listen('message', onMessage);
-
-        try {
-          yield script.load();
-
-          const api = yield script.getExports();
-
-          if (spawn)
-            yield device.resume(pid);
-
-          yield this._waitUntilDone();
-        } finally {
-          script.events.unlisten('message', onMessage);
-        }
+        await this._waitUntilDone();
       } finally {
-        device.events.unlisten('output', onOutput);
+        script.message.disconnect(onMessage);
       }
-    }.bind(this));
+    } finally {
+      device.output.disconnect(onOutput);
+    }
   }
 
   _waitUntilDone() {
@@ -88,10 +86,6 @@ class Application {
         this.ui.onEvents(items);
         break;
       }
-      case '+flush':
-        this._script.postMessage({ type: '+flush-ack' });
-        this._onDone();
-        break;
       default:
         console.error(JSON.stringify(message, null, 2));
         break;
@@ -100,17 +94,6 @@ class Application {
       console.error(JSON.stringify(message, null, 2));
     }
   }
-}
-
-function readFile(file, options) {
-  return new Promise(function (resolve, reject) {
-    fs.readFile(file, options, (err, data) => {
-      if (!err)
-        resolve(data);
-      else
-        reject(err);
-    });
-  });
 }
 
 module.exports = Application;

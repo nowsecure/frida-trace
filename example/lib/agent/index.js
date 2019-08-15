@@ -15,7 +15,11 @@ const BYTE_ARRAY = types.BYTE_ARRAY;
 const bind = trace.bind;
 const when = trace.when;
 
-installFlushBeforeExitHandler();
+rpc.exports = {
+  dispose() {
+    flushEvents();
+  },
+};
 
 trace({
   module: null,
@@ -95,18 +99,4 @@ function flushEvents() {
 
 function isGreaterThanZero(value) {
   return value > 0;
-}
-
-function installFlushBeforeExitHandler() {
-  Interceptor.attach(Module.findExportByName(null, 'exit'), {
-    onEnter() {
-      try {
-        flushEvents();
-      } catch (e) {
-        console.error(e);
-      }
-      send({ name: '+flush', payload: {} });
-      recv('+flush-ack', _ => true).wait();
-    }
-  });
 }
