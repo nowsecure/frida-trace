@@ -39,7 +39,7 @@ function trace (spec) {
 
       let impl;
       try {
-        impl = Memory.readPointer(vtable.add(offset));
+        impl = vtable.add(offset).readPointer();
       } catch (e) {
         onError(new Error(`Failed to read from vtable at offset ${offset}: ${e}`));
         break;
@@ -312,7 +312,7 @@ function bool () {
       return !!rawValue.toInt32();
     },
     read (ptr) {
-      return !!Memory.readU8(ptr);
+      return !!ptr.readU8();
     }
   };
 }
@@ -323,7 +323,7 @@ function byte () {
       return rawValue.toInt32() & 0xff;
     },
     read (ptr) {
-      return Memory.readU8(ptr);
+      return ptr.readU8();
     }
   };
 }
@@ -334,7 +334,7 @@ function short () {
       return rawValue.toInt32() & 0xffff;
     },
     read (ptr) {
-      return Memory.readShort(ptr);
+      return ptr.readShort();
     }
   };
 }
@@ -345,7 +345,7 @@ function int () {
       return rawValue.toInt32();
     },
     read (ptr) {
-      return Memory.readInt(ptr);
+      return ptr.readInt();
     }
   };
 }
@@ -364,7 +364,7 @@ function pointer (pointee) {
       }
     },
     read (ptr) {
-      return Memory.readPointer(ptr);
+      return ptr.readPointer();
     }
   };
 }
@@ -372,7 +372,7 @@ function pointer (pointee) {
 function byteArray () {
   return pointer({
     read (ptr, parameters) {
-      return Memory.readByteArray(ptr, parameters.length);
+      return ptr.readByteArray(parameters.length);
     }
   });
 }
@@ -381,7 +381,7 @@ function utf8 () {
   return pointer({
     read (ptr, parameters) {
       const length = (parameters === undefined) ? -1 : parameters.length;
-      return Memory.readUtf8String(ptr, length);
+      return ptr.readUtf8String(length);
     }
   });
 }
@@ -390,7 +390,7 @@ function utf16 () {
   return pointer({
     read (ptr, parameters) {
       const length = (parameters === undefined) ? -1 : parameters.length;
-      return Memory.readUtf16String(ptr, length);
+      return ptr.readUtf16String(length);
     }
   });
 }
