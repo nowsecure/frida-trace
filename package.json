@@ -7,31 +7,6 @@
     "/index.js",
     "/bin/*.js"
   ],
-  "browserify": {
-    "transform": [
-      [
-        "babelify",
-        {
-          "presets": [
-            [
-              "@babel/preset-env",
-              {
-                "loose": true
-              }
-            ]
-          ],
-          "plugins": [
-            [
-              "@babel/plugin-transform-runtime",
-              {
-                "corejs": 2
-              }
-            ]
-          ]
-        }
-      ]
-    ]
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nowsecure/frida-trace.git"
@@ -46,11 +21,6 @@
     "frida-trace-parse-header": "bin/parse-header.js"
   },
   "dependencies": {
-    "@babel/core": "^7.1.2",
-    "@babel/plugin-transform-runtime": "^7.1.0",
-    "@babel/preset-env": "^7.1.0",
-    "@babel/runtime-corejs2": "^7.1.2",
-    "babelify": "^10.0.0",
     "lodash": "^4.17.4"
   },
   "devDependencies": {
