@@ -1,6 +1,6 @@
 # frida-trace
 
-Trace APIs declaratively through [Frida](http://frida.re).
+Trace APIs declaratively through [Frida](https://www.frida.re).
 
 ## Example
 
