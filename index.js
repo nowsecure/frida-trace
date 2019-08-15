@@ -1,5 +1,3 @@
-const {isArray} = require('lodash');
-
 const IN = Symbol('in');
 const OUT = Symbol('out');
 const IN_OUT = Symbol('in-out');
@@ -30,7 +28,7 @@ function trace (spec) {
     let offset = 0;
 
     for (let entry of functions) {
-      const isPadding = isArray(entry);
+      const isPadding = Array.isArray(entry);
       if (isPadding) {
         const [n] = entry;
         offset += n * pointerSize;
@@ -187,7 +185,7 @@ function computeActions (func, inputActions, outputActions) {
 function computeAction (arg, index) {
   const {name, type, condition} = arg;
 
-  const hasDependentType = isArray(type);
+  const hasDependentType = Array.isArray(type);
   const hasCondition = condition !== null;
 
   if (hasDependentType) {
@@ -295,7 +293,7 @@ function dependencies (direction, type, condition) {
     result.push('$out');
   }
 
-  if (isArray(type)) {
+  if (Array.isArray(type)) {
     result.push(type[1].value);
   }
 

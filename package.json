@@ -20,9 +20,6 @@
     "frida-trace-generate-boilerplate": "bin/generate-boilerplate.js",
     "frida-trace-parse-header": "bin/parse-header.js"
   },
-  "dependencies": {
-    "lodash": "^4.17.15"
-  },
   "devDependencies": {
     "concat-stream": "^2.0.0",
     "frida-libclang": "0.0.12"
