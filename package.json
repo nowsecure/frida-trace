@@ -1,6 +1,6 @@
 {
   "name": "frida-trace",
-  "version": "3.0.2",
+  "version": "3.1.0",
   "description": "Trace APIs declaratively",
   "main": "index.js",
   "files": [
