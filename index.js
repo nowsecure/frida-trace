@@ -71,6 +71,7 @@ trace.types = {
   BYTE_ARRAY: byteArray(),
   UTF8: utf8(),
   UTF16: utf16(),
+  CSTRING: cstring(),
 
   bool: bool,
   byte: byte,
@@ -79,7 +80,8 @@ trace.types = {
   pointer: pointer,
   byteArray: byteArray,
   utf8: utf8,
-  utf16: utf16
+  utf16: utf16,
+  cstring: cstring
 };
 
 function makeInterceptor (spec) {
@@ -389,6 +391,15 @@ function utf16 () {
     read (ptr, parameters) {
       const length = (parameters === undefined) ? -1 : parameters.length;
       return ptr.readUtf16String(length);
+    }
+  });
+}
+
+function cstring () {
+  return pointer({
+    read (ptr, parameters) {
+      const length = (parameters === undefined) ? -1 : parameters.length;
+      return ptr.readCString(length);
     }
   });
 }
