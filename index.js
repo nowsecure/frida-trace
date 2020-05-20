@@ -9,7 +9,7 @@ module.exports = trace;
 function trace (spec) {
   const {module, vtable, functions} = spec;
   const {onError} = spec.callbacks;
-  
+
   let listeners = {}; 
   const intercept = makeInterceptor(spec);
 
@@ -105,7 +105,7 @@ function makeInterceptor (spec) {
     const numInputActions = inputActions.length;
     const numOutputActions = outputActions.length;
 
-    const listener = Interceptor.attach(impl, {
+    return Interceptor.attach(impl, {
       onEnter (args) {
         const values = [];
         for (let i = 0; i !== numArgs; i++) {
@@ -141,7 +141,6 @@ function makeInterceptor (spec) {
         onEvent(event);
       }
     });
-    return listener;
   };
 }
 
