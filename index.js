@@ -23,8 +23,7 @@ function trace (spec) {
         return;
       }
 
-      const listener = intercept(func, impl);
-      listeners[name] = listener;
+      listeners[name] = intercept(func, impl);
     });
   } else if (vtable !== undefined) {
     let offset = 0;
@@ -45,8 +44,7 @@ function trace (spec) {
         break;
       }
 
-      const listener = intercept(entry, impl);
-      listeners[entry.toString()] = listener;
+      listeners[entry.toString()] = intercept(entry, impl);
 
       offset += pointerSize;
     }
