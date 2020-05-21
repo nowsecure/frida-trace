@@ -51,13 +51,7 @@ function trace (spec) {
   } else {
     throw new Error('Either a module or a vtable must be specified');
   }
-  return {
-    stop() {
-      listeners.forEach(listener => {
-        listener.detach();
-      });
-    }
-  };
+  return new Session(listeners);
 }
 
 trace.func = func;
@@ -428,5 +422,17 @@ class Event {
     } else {
       this.args[key] = value;
     }
+  }
+}
+
+class Session {
+  constructor (listeners) {
+    this.listeners = listeners;
+  }
+
+  stop() {
+    this.listeners.forEach(listener => {
+      listener.detach();
+    })
   }
 }
