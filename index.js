@@ -431,7 +431,7 @@ class Session {
     this._listeners = listeners;
   }
 
-  stop() {
+  stop () {
     this.listeners.forEach(listener => {
       listener.detach();
     })
