@@ -10,7 +10,7 @@ function trace (spec) {
   const {module, vtable, functions} = spec;
   const {onError} = spec.callbacks;
 
-  let listeners = Array();
+  const listeners = [];
   const intercept = makeInterceptor(spec);
 
   if (module !== undefined) {
