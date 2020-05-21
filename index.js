@@ -53,7 +53,7 @@ function trace (spec) {
   }
   return {
     stop() {
-      listeners.forEach((listener) => {
+      listeners.forEach(listener => {
         listener.detach();
       })
     }
