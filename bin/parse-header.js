@@ -66,6 +66,8 @@ function parseFunction (cursor) {
       default:
         break;
     }
+    
+    return Cursor.Continue;
   });
 
   return [name, retType, args];
