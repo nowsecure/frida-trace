@@ -428,7 +428,7 @@ class Event {
 
 class Session {
   constructor (listeners) {
-    this.listeners = listeners;
+    this._listeners = listeners;
   }
 
   stop() {
