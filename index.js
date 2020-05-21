@@ -10,6 +10,7 @@ function trace (spec) {
   const {module, vtable, functions} = spec;
   const {onError} = spec.callbacks;
 
+  const listeners = [];
   const intercept = makeInterceptor(spec);
 
   if (module !== undefined) {
@@ -22,7 +23,7 @@ function trace (spec) {
         return;
       }
 
-      intercept(func, impl);
+      listeners.push(intercept(func, impl));
     });
   } else if (vtable !== undefined) {
     let offset = 0;
@@ -43,13 +44,15 @@ function trace (spec) {
         break;
       }
 
-      intercept(entry, impl);
+      listeners.push(intercept(entry, impl));
 
       offset += pointerSize;
     }
   } else {
     throw new Error('Either a module or a vtable must be specified');
   }
+  
+  return new Session(listeners);
 }
 
 trace.func = func;
@@ -101,7 +104,7 @@ function makeInterceptor (spec) {
     const numInputActions = inputActions.length;
     const numOutputActions = outputActions.length;
 
-    Interceptor.attach(impl, {
+    return Interceptor.attach(impl, {
       onEnter (args) {
         const values = [];
         for (let i = 0; i !== numArgs; i++) {
@@ -420,5 +423,17 @@ class Event {
     } else {
       this.args[key] = value;
     }
+  }
+}
+
+class Session {
+  constructor (listeners) {
+    this._listeners = listeners;
+  }
+
+  stop () {
+    this._listeners.forEach(listener => {
+      listener.detach();
+    });
   }
 }
