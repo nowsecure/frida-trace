@@ -52,7 +52,7 @@ function trace (spec) {
     throw new Error('Either a module or a vtable must be specified');
   }
   return {
-    stop: function() {
+    stop() {
       listeners.forEach((listener) => {
         listener.detach();
       })
