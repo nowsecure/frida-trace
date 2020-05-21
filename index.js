@@ -51,6 +51,7 @@ function trace (spec) {
   } else {
     throw new Error('Either a module or a vtable must be specified');
   }
+  
   return new Session(listeners);
 }
 
