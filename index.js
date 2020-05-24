@@ -51,7 +51,7 @@ function trace (spec) {
   } else {
     throw new Error('Either a module or a vtable must be specified');
   }
-  
+
   return new Session(listeners);
 }
 
@@ -407,6 +407,18 @@ function cstring () {
   });
 }
 
+class Session {
+  constructor (listeners) {
+    this._listeners = listeners;
+  }
+
+  stop () {
+    this._listeners.forEach(listener => {
+      listener.detach();
+    });
+  }
+}
+
 class Event {
   constructor (name) {
     this.name = name;
@@ -423,17 +435,5 @@ class Event {
     } else {
       this.args[key] = value;
     }
-  }
-}
-
-class Session {
-  constructor (listeners) {
-    this._listeners = listeners;
-  }
-
-  stop () {
-    this._listeners.forEach(listener => {
-      listener.detach();
-    });
   }
 }
