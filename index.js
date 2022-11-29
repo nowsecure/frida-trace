@@ -106,7 +106,7 @@ function makeInterceptor (spec) {
 
     return Interceptor.attach(impl, {
       onEnter (args) {
-        if (shouldSkip !== undefined && shouldSkip.call(this)) {
+        if (shouldSkip?.(this)) {
           this._skip = true;
           return;
         }
