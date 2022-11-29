@@ -15,7 +15,7 @@
     "hexy": "^0.3.0"
   },
   "devDependencies": {
-    "frida-compile": "^9.0.7",
+    "frida-compile": "^9.5.2",
     "frida-trace": "^3.0.0"
   }
 }
