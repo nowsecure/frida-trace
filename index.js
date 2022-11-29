@@ -88,7 +88,7 @@ trace.types = {
 };
 
 function makeInterceptor (spec) {
-  const {onEvent, onEnter, onLeave, onError} = spec.callbacks;
+  const {shouldSkip, onEvent, onEnter, onLeave, onError} = spec.callbacks;
 
   return function (func, impl) {
     const name = func.name;
@@ -106,6 +106,10 @@ function makeInterceptor (spec) {
 
     return Interceptor.attach(impl, {
       onEnter (args) {
+        if (shouldSkip?.(this)) {
+          this._skip = true;
+          return;
+        }
         const values = [];
         for (let i = 0; i !== numArgs; i++) {
           values.push(args[i]);
@@ -124,6 +128,9 @@ function makeInterceptor (spec) {
         this.event = event;
       },
       onLeave (retval) {
+        if (this._skip === true) {
+          return;
+        }
         const values = this.values;
         const event = this.event;
 
