@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-const clang = require('frida-libclang');
-const dynamicClang = require('frida-libclang/lib/dynamic_clang');
+import clang from 'frida-libclang';
+import dynamicClang from 'frida-libclang/lib/dynamic_clang';
 
 const clangApi = dynamicClang.libclang;
 const {CXCallingConv_Invalid} = dynamicClang.CONSTANTS.CXCallingConv;
@@ -66,7 +66,7 @@ function parseFunction (cursor) {
       default:
         break;
     }
-    
+
     return Cursor.Continue;
   });
 

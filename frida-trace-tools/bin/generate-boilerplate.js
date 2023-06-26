@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const concat = require('concat-stream');
+import concat from 'concat-stream';
 
 const input = process.stdin;
 input.setEncoding('utf-8');

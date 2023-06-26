@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-const Application = require('../lib/application');
-const chalk = require('chalk');
-const hexy = require('hexy').hexy;
+import Application from '../lib/application';
+import chalk from 'chalk';
+import { hexy } from 'hexy';
 
 class ConsoleUI {
   onEvents(events) {
