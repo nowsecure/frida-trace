@@ -1,11 +1,11 @@
-const frida = require('frida');
-const fs = require('fs');
-const path = require('path');
-const util = require('util');
+import frida from 'frida';
+import fs from 'fs';
+import path from 'path';
+import util from 'util';
 
 const readFile = util.promisify(fs.readFile);
 
-class Application {
+export default class Application {
   constructor(ui) {
     this.ui = ui;
 
@@ -38,7 +38,8 @@ class Application {
       const session = await device.attach(pid);
       this._session = session;
 
-      const agent = await readFile(require.resolve('./_agent'), 'utf8');
+      const agentCode = await import('./_agent');
+      const agent = await readFile(agentCode, 'utf8');
       const script = await session.createScript(agent);
       this._script = script;
 
@@ -95,5 +96,3 @@ class Application {
     }
   }
 }
-
-module.exports = Application;
