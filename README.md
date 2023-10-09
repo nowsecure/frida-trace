@@ -5,7 +5,7 @@ Trace APIs declaratively through [Frida](https://www.frida.re).
 ## Example
 
 ```js
-const trace = require('frida-trace');
+import trace from 'frida-trace';
 
 const func = trace.func;
 const argIn = trace.argIn;

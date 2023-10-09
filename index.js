@@ -4,9 +4,7 @@ const IN_OUT = Symbol('in-out');
 
 const pointerSize = Process.pointerSize;
 
-module.exports = trace;
-
-function trace (spec) {
+export default function trace (spec) {
   const {module, vtable, functions} = spec;
   const {onError} = spec.callbacks;
 
