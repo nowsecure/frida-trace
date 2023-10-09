@@ -4,8 +4,7 @@
   "description": "Trace APIs declaratively",
   "main": "index.js",
   "files": [
-    "/index.js",
-    "/bin/*.js"
+    "/index.js"
   ],
   "repository": {
     "type": "git",
@@ -15,13 +14,5 @@
   "bugs": {
     "url": "https://github.com/nowsecure/frida-trace/issues"
   },
-  "homepage": "https://github.com/nowsecure/frida-trace#readme",
-  "scripts": {
-    "frida-trace-generate-boilerplate": "bin/generate-boilerplate.js",
-    "frida-trace-parse-header": "bin/parse-header.js"
-  },
-  "devDependencies": {
-    "concat-stream": "^2.0.0",
-    "frida-libclang": "0.0.12"
-  }
+  "homepage": "https://github.com/nowsecure/frida-trace#readme"
 }
