@@ -1,4 +1,4 @@
-const trace = require('frida-trace');
+import trace from 'frida-trace';
 
 const func = trace.func;
 const argIn = trace.argIn;
