@@ -12,10 +12,11 @@ export default function trace (spec) {
   const intercept = makeInterceptor(spec);
 
   if (module !== undefined) {
+    const mod = Process.getModuleByName(module);
     functions.forEach(func => {
       const {name} = func;
 
-      const impl = Module.findExportByName(module, name);
+      const impl = mod.findExportByName(name);
       if (impl === null) {
         onError(new Error(`Failed to resolve ${module}!${name}`));
         return;
