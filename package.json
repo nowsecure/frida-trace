@@ -2,6 +2,9 @@
   "name": "frida-trace",
   "version": "4.0.0",
   "description": "Trace APIs declaratively",
+  "keywords": [
+    "frida-gum"
+  ],
   "main": "index.js",
   "type": "module",
   "files": [
